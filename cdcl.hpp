@@ -25,7 +25,9 @@ class CdclSolver{
       }
     }
     Clause c = cnf.getClauses()[a.fromClause[l.Idx()]];
-    return c.Resolution(*conflict, l);
+    Clause res = c.Resolution(*conflict, l);
+    cnf.addClause(c);
+    return res;
   }
 
   bool cexplains(Clause *c, Literal conflict_lit) {
