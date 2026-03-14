@@ -2,33 +2,31 @@
 #include<queue>
 #include "./cnf.hpp"
 #include "ranges"
+#include <map>
 
 class CdclSolver{
-  std::vector<std::vector<int>> watched;
+  std::map<Clause *, std::vector<Literal>> watched;
   std::queue<int> toProcess;
   CNF cnf;
   Assignment a;
+  int decision_level = 0;
 
   void decide() {
-    a.assignment.push_back(toProcess.front());
+    a.Assign(toProcess.front(), true, decision_level, -1);
     toProcess.pop();
   }
 
-  Clause explain() {
-    Clause *conflict = cnf.getConflictClause(a);
-    Literal l = a.assignment[a.assignment.size() - 1];
-    for (Literal lit:a.assignment) {
-      bool isNeg;
-      if (conflict->HasLiteral(lit, isNeg) && isNeg) {
-        l = lit;
+  int explain(Clause *conflict) {
+    Literal l = a.order[a.order.size()-1];
+    for (std::vector<Literal>::reverse_iterator it = a.order.rbegin(); it != a.order.rend(); it++) {
+      bool _;
+      if (conflict->HasLiteral(*it, _)) {
+        l = *it;
         break;
       }
     }
-    for (Clause cl:cnf.getClauses()) {
-      if (cl.HasExactLiteral(l) && cexplains(&cl, l)) {
-        return cl.Resolution(*conflict,l);
-      }
-    }
+    return a.fromClause[l.Idx()];
+    
   }
 
   bool cexplains(Clause *c, Literal conflict_lit) {
@@ -40,6 +38,5 @@ class CdclSolver{
       }
     }
     return true;
-  }
-  
+  } 
 };
