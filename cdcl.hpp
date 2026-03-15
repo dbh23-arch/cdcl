@@ -141,29 +141,35 @@ class CdclSolver{
   Clause explain(Clause *conflict) {
     bool cont = true;
     Clause res;
-    Literal l = a.order[a.order.size()-1];
+    Literal l = 0;
+    std::vector<int> dl = a.GetDecisionLevel(decision_level);
+    int iterations = 0;
     while (cont) {
-    l = a.order[a.order.size()-1];
-    for (std::vector<Literal>::reverse_iterator it = a.order.rbegin(); it != a.order.rend(); it++) {
+    l= dl[iterations];
+    while (iterations < dl.size()) {
       bool _;
-      if (conflict->HasLiteral(*it, _)) {
-        l = *it;
+      Literal lit = Literal(iterations);
+      if (conflict->HasLiteral(lit, _)) {
+        l = lit;
         break;
       }
     }
     Clause c = cnf[a.fromClause[l.Idx()]];
     res = c.Resolution(*conflict, l);
     cnf.addClause(res);
-    }
     cont = false;
     for (Literal ltl:res.getLiterals()) {
       if (a.decisionLevel[ltl.Idx()] == decision_level && ltl.Idx() != l.Idx()) {
         cont = true;
+        conflict = &res;
+        iterations++;
         break;
       }
     }
+  }
     return res;
   }
+
   bool allDifferent() {
     std::vector<bool> ls(numVars, false);
     std::cout << cnf.size() << std::endl;
