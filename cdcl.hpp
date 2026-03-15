@@ -9,6 +9,7 @@ class CdclSolver{
   std::queue<int> toProcess;
   CNF cnf;
   Assignment a;
+  std::vector<Clause> decides;
   int decision_level = 0;
   void decide() {
     a.Assign(toProcess.front(), true, decision_level, -1);
@@ -26,7 +27,7 @@ class CdclSolver{
     }
     Clause c = cnf.getClauses()[a.fromClause[l.Idx()]];
     Clause res = c.Resolution(*conflict, l);
-    cnf.addClause(c);
+    cnf.addClause(res);
     return res;
   }
 
