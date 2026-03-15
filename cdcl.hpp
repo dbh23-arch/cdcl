@@ -3,6 +3,7 @@
 #include "./cnf.hpp"
 #include "ranges"
 #include <map>
+#include <queue>
 
 class CdclSolver {
 public:
@@ -85,7 +86,7 @@ public:
     }
 
       void decide() {
-        a.Assign(toProcess.front(), true, decision_level, -1);
+        a.Assign(toProcess.front(), true, decisionLevel, -1);
         toProcess.pop();
       }
 

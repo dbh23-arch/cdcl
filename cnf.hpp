@@ -5,6 +5,8 @@
 #include <stack>
 #include <iostream>
 #include <map>
+#include <fstream>
+#include <sstream>
 
 #pragma once
 class Literal{
@@ -226,10 +228,41 @@ public:
       bool needToCheck = false;
       needToCheck = needToCheck || a.IsAssigned(watched[&c][0].Idx()) || a.IsAssigned(watched[&c][1].Idx());
       needToCheck = needToCheck && (a.IsTrue(watched[&c][0].Idx()) != !watched[&c][0].Negated() || a.IsTrue(watched[&c][0].Idx()) != !watched[&c][0].Negated());
-      if (needToCheck && c.conflict(a)) {
+      if (needToCheck && c.isConflict(a)) {
         return c;
       }
     }
     return Clause();
   }
 };
+
+
+
+
+int ReadFromFile(std::string filepath, CNF& c){
+  std::ifstream file(filepath);
+  if (!file) {
+    std::cerr << "Failed to open file\n";
+    return -1;
+  }
+  std::string line;
+  int nvars;
+  while(std::getline(file, line)){
+    if(line[0]=='p'){
+      std::stringstream ss(line);
+      std::string tmp;
+      int nclause;
+      ss >> tmp >> tmp >> nvars >> nclause;
+      std::cout<<"Parsing CNF with " <<nvars<<" literals and "<<nclause<<" clauses"<<std::endl;
+      break;
+    }
+  }
+  while(std::getline(file, line)){
+    std::stringstream ss(line);
+    std::vector<Literal> lits;
+    int lit=0;
+    while (ss >> lit && lit != 0) lits.push_back(lit);
+    c.addClause(lits);
+  }
+  return nvars;
+}
