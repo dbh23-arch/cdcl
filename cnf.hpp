@@ -4,6 +4,7 @@
 #include <string>
 #include <stack>
 #include <iostream>
+#include <map>
 
 #pragma once
 class Literal{
@@ -47,6 +48,7 @@ public:
   std::vector<char> assignment;
   std::vector<int> decisionLevel;
   std::vector<int> fromClause;
+  std::vector<Literal> order;
   int size;
   Assignment(int maxLiteral):
     assignment(maxLiteral + 1, 0),
@@ -57,13 +59,14 @@ public:
     assignment[idx] = 2 | (val?1:0);
     decisionLevel[idx]=level;
     fromClause[idx]=from;
+    order.push_back(Literal(idx, !val));
   }
   bool IsAssigned(int idx){return (assignment[idx]&2)!=0;}
   bool IsAssigned(int idx, bool &True){
     True = assignment[idx]&1;
     return (assignment[idx]&2)!=0;
   }
-  bool IsTrue(int idx){assignment[idx]&1;}
+  bool IsTrue(int idx){return assignment[idx]&1;}
   void RemoveAssignment(int idx){
     assignment[idx]=0;
   }
@@ -174,6 +177,22 @@ public:
     }
     return found;
   }
+
+  bool conflict(Assignment &a) {
+    if (isSatisfied(a)) {
+      return false;
+    }
+    for (Literal l:lits) {
+      if (!a.IsAssigned(l.Idx())) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  std::vector<Literal> getLiterals() {
+    return lits;
+  }
 };
 
 class CNF:std::vector<Clause>{
@@ -199,5 +218,20 @@ public:
   bool isSatisfied(Assignment &a){
     for(Clause c:*this) if(!c.isSatisfied(a)) return false;
     return true;
+  }
+  
+  std::vector<Clause> getClauses() {
+    return *this;
+  }
+  Clause getConflictClause(Assignment &a, std::map<Clause *, std::vector<Literal>> watched) {
+    for (Clause c:*this) {
+      bool needToCheck = false;
+      needToCheck = needToCheck || a.IsAssigned(watched[&c][0].Idx()) || a.IsAssigned(watched[&c][1].Idx());
+      needToCheck = needToCheck && (a.IsTrue(watched[&c][0].Idx()) != !watched[&c][0].Negated() || a.IsTrue(watched[&c][0].Idx()) != !watched[&c][0].Negated());
+      if (needToCheck && c.conflict(a)) {
+        return c;
+      }
+    }
+    return Clause();
   }
 };
