@@ -192,7 +192,7 @@ class CdclSolver{
     std::cout << "vivified" << std::endl;
     int conflict = propagate();
     std::cout << conflict << std::endl;
-    while (!allDifferent()) {
+    while (!isSatisfied()) {
       if (conflict == -1) {
         decide();
         std::cout << "decided" << std::endl;
@@ -204,7 +204,7 @@ class CdclSolver{
         std::cout << "explaining" << std::endl;
         Clause res = explain(&cnf[conflict]);
         std::cout << res.toString() << std::endl;
-        if (res.isEmpty()) {
+        if (res.isEmpty() || decision_level == 0) {
           return false;
         }
         backjump(res);
