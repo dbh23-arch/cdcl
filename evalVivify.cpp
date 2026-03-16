@@ -16,7 +16,7 @@ int main() {
   }
   std::sort(files.begin(), files.end());
 
-  auto totalStart = std::chrono::high_resolution_clock::now();
+  double totalSolveTime = 0.0;
 
   for (const auto& filepath : files) {
     std::cout << "=== " << filepath << " ===" << std::endl;
@@ -35,14 +35,13 @@ int main() {
     auto end = std::chrono::high_resolution_clock::now();
 
     double elapsed = std::chrono::duration<double>(end - start).count();
+    totalSolveTime += elapsed;
     std::cout << "Result: " << (sat ? "SAT" : "UNSAT") << std::endl;
     std::cout << "Time: " << elapsed << "s" << std::endl;
     std::cout << std::endl;
   }
 
-  auto totalEnd = std::chrono::high_resolution_clock::now();
-  double totalElapsed = std::chrono::duration<double>(totalEnd - totalStart).count();
-  std::cout << "=== Total time: " << totalElapsed << "s ===" << std::endl;
+  std::cout << "=== Total solver time: " << totalSolveTime << "s ===" << std::endl;
 
   return 0;
 }
