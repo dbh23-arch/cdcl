@@ -13,8 +13,9 @@ class CdclSolver{
   int decision_level;
   std::map<int, bool> trail;
   int numVars;
+  bool verbose;
   public:
-  CdclSolver(int numVars, CNF& expression) : a(numVars), decision_level(1) {
+  CdclSolver(int numVars, CNF& expression, bool verbose=false) : a(numVars), decision_level(1), verbose(verbose) {
     cnf = expression;
     setup();
   }
@@ -121,7 +122,7 @@ class CdclSolver{
         for (Literal l:c.getLiterals()) {
           if (!a.IsAssigned(l.Idx())) {
               assign(l,-1);
-              std::cout<<"Assigning "<<l.Idx()<<" to "<<!l.Negated()<<std::endl;
+              if(verbose) std::cout<<"Assigning "<<l.Idx()<<" to "<<!l.Negated()<<std::endl;
               return;
           }
         }
@@ -135,7 +136,7 @@ class CdclSolver{
         max = a.decisionLevel[l.Idx()];
       }
     }
-    std::cout<<"Backjumping from decision level "<<decision_level<<" to "<<max<<std::endl;
+    if(verbose) std::cout<<"Backjumping from decision level "<<decision_level<<" to "<<max<<std::endl;
     decision_level = max;
     a.SetMaxDecisionLevel(max);
     setup();
@@ -162,9 +163,9 @@ class CdclSolver{
     return res;
   }
 
-  bool solve(int maxIter=10000) {
+  bool solve(int maxIter=100000) {
     vivify();
-    std::cout << "vivified" << std::endl;
+    if(verbose) std::cout << "vivified" << std::endl;
     for(int i=0; i<maxIter; i++){
       int conflict = propagate();
       if(cnf.isSatisfied(a)){
@@ -174,14 +175,14 @@ class CdclSolver{
         decide();
       } else {
         if(decision_level==1) return false;
-        std::cout<<"Conflict on clause "<<conflict<<": "<<cnf[conflict].toString()<<std::endl;
+        if(verbose) std::cout<<"Conflict on clause "<<conflict<<": "<<cnf[conflict].toString()<<std::endl;
         Clause res = explain(conflict);
         if(res.isEmpty()){
           return false;
         }
         addClause(res);
         vivifyClause(cnf.size()-1);
-        std::cout<<"Add explain clause "<<res.toString()<<std::endl;
+        if(verbose) std::cout<<"Add explain clause "<<res.toString()<<std::endl;
         backjump(res);
       }
     }
