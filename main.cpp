@@ -13,6 +13,16 @@ void testWatchedLits(){
   solver.propagate();
 }
 
+void testUNSAT() {
+  CNF cnf;
+  cnf.addClause({1,2});
+  cnf.addClause({-1,-2});
+  cnf.addClause({-1,2});
+  cnf.addClause({1,-2});
+  CdclSolver solver(4,cnf);
+  solver.propagate();
+}
+
 int main(){
   // testWatchedLits();
   // CNF cnf;
